@@ -1,6 +1,7 @@
 import { HttpService } from '../../core/http.service'
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 declare var _:any;
 
@@ -14,26 +15,26 @@ export class ExportServiceCfg {
     exportFastRecursive(type : string, id : string) {
         // return an observable
         return this.httpAPI.get('/api/cfg/export/'+type+'/'+id)
-        .map((res) => {
+        .pipe(map((res) => {
         //return new Blob([res.arrayBuffer()],{type: "application/octet-stream" })
         return [new Blob([res['_body']],{type: "application/json"}),res.json()];
-        })
+        }));
     }
 
     bulkExport(values) {
       return this.httpAPI.post('/api/cfg/bulkexport',values, null, true)
-      .map((res) => {
+      .pipe(map((res) => {
           console.log(res);
           return [new Blob([res['_body']],{type: "application/json"}),res.json()];
-      })
+      }));
     }
 
     exportRecursive(type : string, id : string, values) {
         console.log(values);
         // return an observable
         return this.httpAPI.post('/api/cfg/export/'+type+'/'+id, values, null, true)
-        .map((res) => {
+        .pipe(map((res) => {
             return [new Blob([res['_body']],{type: "application/json"}),res.json()];
-        })
+        }));
     }
 }

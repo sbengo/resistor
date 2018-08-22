@@ -9,7 +9,9 @@ import { ExportServiceCfg } from '../common/dataservice/export.service'
 import { ExportFileModal } from '../common/dataservice/export-file-modal';
 
 import { GenericModal } from '../common/custom-modal/generic-modal';
-import { Observable } from 'rxjs/Rx';
+import { Observable, of, forkJoin } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
+
 
 import { TableListComponent } from '../common/table-list.component';
 import { ProductComponentConfig, TableRole, OverrideRoleActions } from './product.data';
@@ -206,10 +208,10 @@ export class ProductComponent implements OnInit {
       );
     } else {
       return this.productService.deleteProductItem(id)
-      .do(
+      .pipe(tap(
         (test) =>  { this.counterItems++; console.log(this.counterItems)},
         (err) => { this.counterErrors.push({'ID': id, 'error' : err})}
-      );
+      ));
     }
   }
 
@@ -271,18 +273,18 @@ export class ProductComponent implements OnInit {
       }
     } else {
       return this.productService.editProductItem(component, component.ID)
-      .do(
+      .pipe(tap(
         (test) =>  { this.counterItems++ },
         (err) => { this.counterErrors.push({'ID': component['ID'], 'error' : err['_body']})}
       )
-      .catch((err) => {
-        return Observable.of({'ID': component.ID , 'error': err['_body']})
-      })
+      ,catchError((err) => {
+        return of({'ID': component.ID , 'error': err['_body']})
+      }))
     }
   }
 
   genericForkJoin(obsArray: any) {
-    Observable.forkJoin(obsArray)
+    forkJoin(obsArray)
               .subscribe(
                 data => {
                   this.selectedArray = [];

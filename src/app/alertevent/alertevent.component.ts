@@ -8,7 +8,7 @@ import { ExportServiceCfg } from '../common/dataservice/export.service'
 import { ExportFileModal } from '../common/dataservice/export-file-modal';
 
 import { GenericModal } from '../common/custom-modal/generic-modal';
-import { Observable } from 'rxjs/Rx';
+import { Observable, of } from 'rxjs';
 
 import { TableListComponent } from '../common/table-list.component';
 import { AlertEventComponentConfig, TableRole, OverrideRoleActions } from './alertevent.data';

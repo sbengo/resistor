@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { HttpService } from '../core/http.service';
 
 
@@ -14,17 +15,17 @@ export class HomeService {
 
     userLogout() {
         return this.http.post('/logout','',null,true)
-        .map( (responseData) => true);
+        .pipe(map( (responseData) => true));
     }
 
     getInfo() {
         // return an observable
         return this.http.get('/api/rt/agent/info/version/')
-        .map( (responseData) => responseData.json())
+        .pipe(map( (responseData) => responseData.json()));
     }
 
     reloadConfig() {
         return this.http.get('/api/rt/agent/reload/')
-        .map( (responseData) =>  responseData.json());
+        .pipe(map( (responseData) =>  responseData.json()));
     }
 }

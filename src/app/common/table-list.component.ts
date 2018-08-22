@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, forwardRef, IterableDiffers, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs/Rx';
+import { Observable, of } from 'rxjs';
 
 import { ItemsPerPageOptions } from './global-constants';
 import { TableActions } from './table-actions';

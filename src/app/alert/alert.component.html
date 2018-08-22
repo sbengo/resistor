@@ -35,7 +35,7 @@
             <label class="control-label col-sm-2" for="ID">ID</label>
             <i placement="top" style="float: left" class="info control-label glyphicon glyphicon-info-sign" tooltipAnimation="true" tooltip="Unique identifier of the alert. Autocalculated from below fields"></i>
             <div class="col-sm-9">
-              <input formControlName="ID" id="ID" disabled style="border:0px;" [ngModel]="sampleComponentForm.value.BaselineID+'-'+sampleComponentForm.value.ProductID+'-'+sampleComponentForm.value.GroupID+'-'+(sampleComponentForm.value.NumAlertID | leadingZeroes)" />
+              <input formControlName="ID" id="ID" disabled style="border:0px;" [ngModel]="sampleComponentForm.value.BaselineID+'-'+sampleComponentForm.value.ProductID+'-'+sampleComponentForm.value.GroupID+'-'+(sampleComponentForm.value.NumAlertID | leadingZeroes)"/>
               <control-messages [control]="sampleComponentForm.controls.ID"></control-messages>
             </div>
           </div>
@@ -54,7 +54,7 @@
             <label class="control-label col-sm-2" for="ProductID">ProductID</label>
             <i placement="top" style="float: left" class="info control-label glyphicon glyphicon-info-sign" tooltipAnimation="true" tooltip="ID of the product"></i>
             <div class="col-sm-9">
-              <ss-multiselect-dropdown [options]="select_product" formControlName="ProductID" [settings]="single_select" [texts]="myTexts" [ngModel]="sampleComponentForm.value.ProductID"></ss-multiselect-dropdown>
+              <ss-multiselect-dropdown [options]="select_product" formControlName="ProductID" [settings]="single_select_custom" [texts]="myTexts" [ngModel]="sampleComponentForm.value.ProductID"></ss-multiselect-dropdown>
               <control-messages [control]="sampleComponentForm.controls.ProductID"></control-messages>
             </div>
           </div>
@@ -119,7 +119,7 @@
             <label class="control-label col-sm-2" for="InfluxDB">InfluxDB</label>
             <i placement="top" style="float: left" class="info control-label glyphicon glyphicon-info-sign" tooltipAnimation="true" tooltip="Unique identifier of InfluxDB server"></i>
             <div class="col-sm-9">
-              <ss-multiselect-dropdown *ngIf="ifxdb_list && select_ifxdb.length > 0" [options]="select_ifxdb" formControlName="InfluxDB" [settings]="single_select" [texts]="myTexts" [ngModel]="sampleComponentForm.value.InfluxDB" (ngModelChange)="pickDBItem($event)"></ss-multiselect-dropdown>
+              <ss-multiselect-dropdown *ngIf="ifxdb_list && select_ifxdb.length > 0" [options]="select_ifxdb" formControlName="InfluxDB" [settings]="single_select" [texts]="myTexts" [ngModel]="sampleComponentForm.value.InfluxDB" (ngOnChanges)="pickDBItem($event)"></ss-multiselect-dropdown>
               <control-messages [control]="sampleComponentForm.controls.InfluxDB"></control-messages>
             </div>
           </div>

@@ -1,19 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/Rx';
-import {
-    Http,
-    RequestOptions,
-    RequestOptionsArgs,
-    Response,
-    Request,
-    Headers,
-    XHRBackend
-} from '@angular/http';
-
+import { Observable, of } from 'rxjs';
+import { tap, catchError, finalize, subscribeOn } from 'rxjs/operators';
+import { Http, RequestOptions, RequestOptionsArgs, Response, Request,  Headers,  XHRBackend} from '@angular/http';
 import { Router } from '@angular/router';
 import { DefaultRequestOptions } from './default-request.options';
 import { LoaderService } from './loader/loader.service';
+import { throwError } from 'rxjs';
 
 @Injectable()
 export class HttpService extends Http {
@@ -33,68 +25,73 @@ export class HttpService extends Http {
 
     get(url: string, options?: RequestOptionsArgs ): Observable<any> {
         return super.get(this.getFullUrl(url), this.requestOptions(options))
-            .catch(this.onCatch.bind(this))
-            .do((res: Response) => {
+            .pipe(
+            catchError(this.onCatch.bind(this))
+            ,tap((res: Response) => {
             }, (error: any) => {
                 this.onError(error);
             })
-            .finally(() => {
+            ,finalize(() => {
                 this.onEnd();
-            });
+            }));
     }
 
     post(url: string, data:any, options?: RequestOptionsArgs, hideAlert? : boolean ): Observable<any> {
         return super.post(this.getFullUrl(url), data, this.requestOptions(options))
-            .catch(this.onCatch.bind(this))
-            .do((res: Response) => {
+            .pipe(
+            catchError(this.onCatch.bind(this))
+            ,tap((res: Response) => {
                 if (!hideAlert) this.onSuccess(res);
             }, (error: any) => {
                 this.onError(error);
             })
-            .finally(() => {
+            ,finalize(() => {
                 this.onEnd();
-            });
+            }));
     }
 
     postFile(url:string, data:any, options?: RequestOptionsArgs) : Observable<any> {
         if (options == null) options = {};
         options.headers = this.headersUpload;
         return super.post(this.getFullUrl(url), data, options)
-            .catch(this.onCatch.bind(this))
-            .do((res: Response) => {
+            .pipe(
+            catchError(this.onCatch.bind(this))
+            ,tap((res: Response) => {
                 this.onSuccess(res);
             }, (error: any) => {
                 this.onError(error);
             })
-            .finally(() => {
+            ,finalize(() => {
                 this.onEnd();
-            });
+            }));
     }
 
     put(url: string, data:any, options?: RequestOptionsArgs, hideAlert? : boolean ): Observable<any> {
         return super.put(this.getFullUrl(url), data, this.requestOptions(options))
-            .catch(this.onCatch.bind(this))
-            .do((res: Response) => {
+            .pipe(
+            catchError(this.onCatch.bind(this))
+            ,tap((res: Response) => {
               if (!hideAlert) this.onSuccess(res);
             }, (error: any) => {
                 this.onError(error);
             })
-            .finally(() => {
+            ,finalize(() => {
                 this.onEnd();
-            });
+            }));
     }
 
     delete(url: string, options?: RequestOptionsArgs ): Observable<any> {
         return super.delete(this.getFullUrl(url), this.requestOptions(options))
-            .catch(this.onCatch.bind(this))
-            .do((res: Response) => {
+            .pipe(
+            catchError(this.onCatch.bind(this))
+            ,tap((res: Response) => {
                 this.onSuccess(res);
             }, (error: any) => {
                 this.onError(error);
             })
-            .finally(() => {
+            ,finalize(() => {
                 this.onEnd();
-            });
+            }));
     }
 
     private requestOptions(options?: RequestOptionsArgs): RequestOptionsArgs {
@@ -123,7 +120,7 @@ export class HttpService extends Http {
             this.loaderService.show(error,'danger');
             //alert('CODE :'+error.status +'\n'+"ERROR: \t"+error['_body']);
         }
-        return Observable.throw(error);
+        return throwError(error);
     }
 
     private onSuccess(res: Response): void {

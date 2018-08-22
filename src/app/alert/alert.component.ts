@@ -15,7 +15,8 @@ import { ExportServiceCfg } from '../common/dataservice/export.service'
 import { ExportFileModal } from '../common/dataservice/export-file-modal';
 
 import { GenericModal } from '../common/custom-modal/generic-modal';
-import { Observable } from 'rxjs/Rx';
+import { Observable, of, forkJoin } from 'rxjs';
+import { tap, catchError, subscribeOn } from 'rxjs/operators';
 
 import { TableListComponent } from '../common/table-list.component';
 import { AlertComponentConfig, TableRole, OverrideRoleActions } from './alert.data';
@@ -67,6 +68,11 @@ export class AlertComponent implements OnInit {
 
   private single_select: IMultiSelectSettings = {
       singleSelect: true,
+  };
+  
+  private single_select_custom: IMultiSelectSettings = {
+    singleSelect: true,
+    allowCustomItem: true
   };
 
   public data : Array<any>;
@@ -345,10 +351,10 @@ export class AlertComponent implements OnInit {
       );
     } else {
       return this.alertService.deleteAlertItem(id)
-      .do(
+      .pipe(tap(
         (test) =>  { this.counterItems++; console.log(this.counterItems)},
         (err) => { this.counterErrors.push({'ID': id, 'error' : err})}
-      );
+      ));
     }
   }
 
@@ -421,18 +427,18 @@ export class AlertComponent implements OnInit {
       }
     } else {
       return this.alertService.editAlertItem(component, component.ID)
-      .do(
+      .pipe(tap(
         (test) =>  { this.counterItems++ },
         (err) => { this.counterErrors.push({'ID': component['ID'], 'error' : err['_body']})}
       )
-      .catch((err) => {
-        return Observable.of({'ID': component.ID , 'error': err['_body']})
-      })
+      ,catchError((err) => {
+        return of({'ID': component.ID , 'error': err['_body']})
+      }))
     }
   }
 
   genericForkJoin(obsArray: any) {
-    Observable.forkJoin(obsArray)
+    forkJoin(obsArray)
               .subscribe(
                 data => {
                   this.selectedArray = [];
@@ -503,6 +509,9 @@ export class AlertComponent implements OnInit {
       );
   }
 
+  get InfluxDB(): any { return this.sampleComponentForm.get('InfluxDB'); }
+
+
   pickDBItem(ifxdb_picked) {
 
     if (this.picked_ifxdb) {
@@ -542,6 +551,13 @@ export class AlertComponent implements OnInit {
         () => console.log('DONE')
       );
     }
+  }
+
+  addCustomItem(data) {
+    console.log("data",data);
+    console.log("PREADD",this.select_product)
+    this.select_product.push(data);
+    console.log("ADDED?",this.select_product)
   }
 
   createMultiselectArray(tempArray, ID?, Name?, extraData?) : any {

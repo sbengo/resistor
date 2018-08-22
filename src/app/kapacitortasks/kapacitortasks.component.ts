@@ -8,7 +8,8 @@ import { ExportServiceCfg } from '../common/dataservice/export.service'
 import { ExportFileModal } from '../common/dataservice/export-file-modal';
 
 import { GenericModal } from '../common/custom-modal/generic-modal';
-import { Observable } from 'rxjs/Rx';
+import { Observable, of, forkJoin } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 
 import { TableListComponent } from '../common/table-list.component';
 import { KapacitorTasksComponentRt, TableRole, OverrideRoleActions } from './kapacitortasks.data';
@@ -128,7 +129,7 @@ export class KapacitorTasksComponent implements OnInit {
   }
 
   genericForkJoin(obsArray: any) {
-    Observable.forkJoin(obsArray)
+    forkJoin(obsArray)
               .subscribe(
                 data => {
                   this.selectedArray = [];

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { HttpService } from '../core/http.service';
 
 declare var _:any;
@@ -16,36 +17,33 @@ export class RangeTimeService {
 
     addRangeTimeItem(dev) {
         return this.http.post('/api/cfg/rangetimes',JSON.stringify(dev,this.jsonParser))
-        .map( (responseData) => responseData.json());
+        .pipe(map( (responseData) => responseData.json()));
 
     }
 
     editRangeTimeItem(dev, id) {
         return this.http.put('/api/cfg/rangetimes/'+id,JSON.stringify(dev,this.jsonParser))
-        .map( (responseData) => responseData.json());
+        .pipe(map( (responseData) => responseData.json()));
     }
 
 
     getRangeTimeItem(filter_s: string) {
         return this.http.get('/api/cfg/rangetimes')
-        .map( (responseData) => {
-            return responseData.json();
-        })
+        .pipe(map( (responseData) => responseData.json()));
     }
 
     getRangeTimeItemById(id : string) {
         // return an observable
         console.log("ID: ",id);
         return this.http.get('/api/cfg/rangetimes/'+id)
-        .map( (responseData) =>
-            responseData.json()
-    )};
+        .pipe(map( (responseData) => responseData.json()));
+    };
 
     checkOnDeleteRangeTimeItem(id : string){
       return this.http.get('/api/cfg/rangetimes/checkondel/'+id)
-      .map( (responseData) =>
+      .pipe(map( (responseData) =>
        responseData.json()
-      ).map((deleteobject) => {
+      ),map((deleteobject) => {
           console.log("MAP SERVICE",deleteobject);
           let result : any = {'ID' : id};
           _.forEach(deleteobject,function(value,key){
@@ -56,14 +54,12 @@ export class RangeTimeService {
               result[value.TypeDesc].push(value.ObID);
           });
           return result;
-      });
+      }));
     };
 
     deleteRangeTimeItem(id : string) {
         // return an observable
         return this.http.delete('/api/cfg/rangetimes/'+id)
-        .map( (responseData) =>
-         responseData.json()
-        );
+        .pipe(map( (responseData) => responseData.json()));
     };
 }

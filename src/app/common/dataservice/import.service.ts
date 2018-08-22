@@ -1,6 +1,7 @@
 import { HttpService } from '../../core/http.service'
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 declare var _:any;
 
@@ -19,8 +20,8 @@ export class ImportServiceCfg {
         formData.append('over_write',data.over_write );
         formData.append('export_file', data.files[0], data.files[0].name);
         return this.httpAPI.postFile('/api/cfg/import/', formData)
-        .map((res) => {
+        .pipe(map((res) => {
             return res.json();
-        })
+        }))
     }
 }

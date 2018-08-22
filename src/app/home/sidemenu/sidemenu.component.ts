@@ -1,6 +1,6 @@
 import { Component, ViewChild,ViewContainerRef, Input, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
+import { Observable, of } from 'rxjs';
 import { WindowRef } from '../../common/windowref';
 
 

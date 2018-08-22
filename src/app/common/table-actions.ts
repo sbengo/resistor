@@ -8,7 +8,7 @@
 
 import { NgModule, Component, Pipe, OnInit, DoCheck, AfterContentInit, HostListener, Input, ElementRef, Output, EventEmitter, forwardRef, IterableDiffers } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs/Rx';
+import { Observable } from 'rxjs';
 import { FormsModule, NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 
 @Component({

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { HttpService } from '../core/http.service';
 
 declare var _:any;
@@ -12,6 +13,6 @@ export class LoginService {
 
     login(data) {
         return  this.http.post('/login', data, null, true)
-        .map( (responseData) => responseData.json());
+        .pipe(map( (responseData) => responseData.json()));
     }
 }

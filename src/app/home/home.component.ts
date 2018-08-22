@@ -1,7 +1,7 @@
 import { Component, ViewChild,ViewContainerRef } from '@angular/core';
 import { NgSwitch, NgSwitchCase, NgSwitchDefault } from '@angular/common';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
+import { Observable, of } from 'rxjs';
 import { MenuItems, DefaultItem } from './home.data';
 import { BlockUIService } from '../common/blockui/blockui-service';
 import { BlockUIComponent } from '../common/blockui/blockui-component';
