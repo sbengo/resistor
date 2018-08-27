@@ -45,12 +45,16 @@ export class AlertService {
     }
 
     getAlertItemById(id : string) {
-        // return an observable
-        console.log("ID: ",id);
         return this.http.get('/api/cfg/alertid/'+id)
         .pipe(map( (responseData) => responseData.json()))
     };
 
+
+    getAlertItemByProductId(productid : string) {
+        return this.http.get('/api/cfg/alertid/byproductid/'+productid)
+        .map( (responseData) =>
+            responseData.json()
+    )};
 
     checkOnDeleteAlertItem(id : string){
         return this.http.get('/api/cfg/alertid/checkondel/'+id)

@@ -24,6 +24,7 @@ func NewAPICfgAlertID(m *macaron.Macaron) error {
 		m.Post("/deploy", reqSignedIn, bind(config.AlertIDCfg{}), DeployAlertID)
 		m.Delete("/:id", reqSignedIn, DeleteAlertID)
 		m.Get("/:id", reqSignedIn, GetAlertIDCfgByID)
+		m.Get("/byproductid/:productid", reqSignedIn, GetAlertIDCfgArrayByProductID)
 		m.Get("/checkondel/:id", reqSignedIn, GetAlertIDAffectOnDel)
 	})
 
@@ -62,13 +63,23 @@ func AddAlertID(ctx *Context, dev config.AlertIDCfg) {
 func UpdateAlertID(ctx *Context, dev config.AlertIDCfg) {
 	dev.Modified = time.Now().UTC()
 	kapa.DeployKapaTask(dev)
-	id := ctx.Params(":id")
-	log.Debugf("Trying to update: %+v", dev)
+	id := ctx.Params(":id") //oldID from form
+	log.Debugf("Trying to update alert with id: %s and info: %+v", id, dev)
 	affected, err := agent.MainConfig.Database.UpdateAlertIDCfg(id, &dev)
 	if err != nil {
 		log.Warningf("Error on update for alert %s  , affected : %+v , error: %s", dev.ID, affected, err)
 		ctx.JSON(404, err.Error())
 	} else {
+		if id != dev.ID {
+			//If the name of the alert has been changed,
+			//a new task has been created on kapacitor servers with the new name,
+			//the kapacitor task with the old name must be deleted.
+			_, _, sKapaSrvsNotOK := DeleteKapaTask(id)
+			if len(sKapaSrvsNotOK) > 0 {
+				log.Warningf("Error deleting task %s from kapacitor servers: %s", id, sKapaSrvsNotOK)
+				ctx.JSON(404, err.Error())
+			}
+		}
 		//TODO: review if needed return device data
 		ctx.JSON(200, &dev)
 	}
@@ -91,17 +102,25 @@ func DeployAlertID(ctx *Context, dev config.AlertIDCfg) {
 	}
 }
 
-//DeleteAlertID removes alert from
-func DeleteAlertID(ctx *Context) {
-	id := ctx.Params(":id")
-	log.Debugf("Trying to delete: %+v", id)
-	sKapaSrvsNotOK := make([]string, 0)
+//DeleteKapaTask Deletes task from kapacitor servers
+func DeleteKapaTask(id string) (int, int, []string) {
 	kapaserversarray, err := kapa.GetKapaServers("")
+	iNumKapaServers := len(kapaserversarray)
+	iNumDeleted := 0
+	sKapaSrvsNotOK := make([]string, 0)
 	if err != nil {
 		log.Warningf("Error getting kapacitor servers: %+s", err)
 	} else {
-		_, _, sKapaSrvsNotOK = kapa.DeleteKapaTask(id, kapaserversarray)
+		iNumKapaServers, iNumDeleted, sKapaSrvsNotOK = kapa.DeleteKapaTask(id, kapaserversarray)
 	}
+	return iNumKapaServers, iNumDeleted, sKapaSrvsNotOK
+}
+
+//DeleteAlertID removes alert from resistor database
+func DeleteAlertID(ctx *Context) {
+	id := ctx.Params(":id")
+	log.Debugf("Trying to delete: %+v", id)
+	_, _, sKapaSrvsNotOK := DeleteKapaTask(id)
 	if len(sKapaSrvsNotOK) == 0 {
 		affected, err := agent.MainConfig.Database.DelAlertIDCfg(id)
 		if err != nil {
@@ -132,16 +151,33 @@ func GetAlertIDCfgByID(ctx *Context) {
 	}
 }
 
+//GetAlertIDCfgArrayByProductID Gets AlertIDCfgArray By ProductID from resistor database
+//Returns the information of the process with a JSON in context
+func GetAlertIDCfgArrayByProductID(ctx *Context) {
+	productid := ctx.Params(":productid")
+	filter := ""
+	if len(productid) > 0 {
+		filter = "productid='" + productid + "'"
+	}
+	dev, err := agent.MainConfig.Database.GetAlertIDCfgArray(filter)
+	if err != nil {
+		log.Warningf("Error getting alerts with productid: %s. Error: %s", productid, err)
+		ctx.JSON(404, err.Error())
+	} else {
+		ctx.JSON(200, &dev)
+	}
+}
+
 //GetAlertIDCfgByTemplate Gets an array of strings with the IDs of the Alerts where this template is used.
 //The input parameters are the 5 fields needed to define a template.
-func GetAlertIDCfgByTemplate(sTriggerType string, sCritDirection string, sThresholdType string, sTrendSign string, sStatFunc string) ([]string, error) {
-	filter := fmt.Sprintf("trigertype = '%s'", sTriggerType)
+func GetAlertIDCfgByTemplate(sTriggerType string, sCritDirection string, sTrendType string, sTrendSign string, sStatFunc string) ([]string, error) {
+	filter := fmt.Sprintf("triggertype = '%s'", sTriggerType)
 	if sTriggerType != "DEADMAN" {
 		if len(sCritDirection) > 0 {
 			filter += fmt.Sprintf(" and critdirection = '%s'", sCritDirection)
 		}
-		if len(sThresholdType) > 0 {
-			filter += fmt.Sprintf(" and thresholdtype = '%s'", sThresholdType)
+		if len(sTrendType) > 0 {
+			filter += fmt.Sprintf(" and trendtype = '%s'", sTrendType)
 		}
 		if len(sStatFunc) > 0 {
 			filter += fmt.Sprintf(" and statfunc = '%s'", sStatFunc)

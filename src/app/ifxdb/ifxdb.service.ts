@@ -42,6 +42,12 @@ export class IfxDBService {
         .pipe(map( (responseData) => responseData.json()));
     };
 
+    getIfxDBCfgArrayByMeasName(id : string) {
+        return this.http.get('/api/cfg/ifxdb/bymeasname/'+id)
+        .map( (responseData) =>
+            responseData.json()
+    )};
+
     checkOnDeleteIfxDBItem(id : string){
       return this.http.get('/api/cfg/ifxdb/checkondel/'+id)
       .pipe(map( (responseData) =>

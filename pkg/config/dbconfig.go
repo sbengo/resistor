@@ -122,11 +122,11 @@ type RangeTimeCfg struct {
 // TemplateCfg Templating data strucr
 type TemplateCfg struct {
 	ID                      string    `xorm:"'id' unique" binding:"Required"`
-	TrigerType              string    `xorm:"trigertype" binding:"Required;In(DEADMAN,THRESHOLD,TREND)"` //deadman
+	TriggerType             string    `xorm:"triggertype" binding:"Required;In(DEADMAN,THRESHOLD,TREND)"` //deadman
 	StatFunc                string    `xorm:"statfunc"`
 	CritDirection           string    `xorm:"critdirection"`
-	ThresholdType           string    `xorm:"thresholdtype"` //Absolute/Relative
-	TrendSign               string    `xorm:"trendsign"`     //Positive/Negative
+	TrendType               string    `xorm:"trendtype"` //Absolute/Relative
+	TrendSign               string    `xorm:"trendsign"` //Positive/Negative
 	TplData                 string    `xorm:"tpldata"`
 	Description             string    `xorm:"description"`
 	Modified                time.Time `xorm:"modified"`
@@ -135,10 +135,33 @@ type TemplateCfg struct {
 
 // OutHTTPCfg Alert Destination HTTP based backends config
 type OutHTTPCfg struct {
-	ID          string `xorm:"'id' unique" binding:"Required"`
-	Type        string `xorm:"type"`
-	JSONConfig  string `xorm:"json_config"`
-	Description string `xorm:"description"`
+	ID                 string   `xorm:"'id' unique" binding:"Required"`
+	Type               string   `xorm:"type"`
+	JSONConfig         string   `xorm:"json_config"`
+	Description        string   `xorm:"description"`
+	EndPointID         string   `xorm:"endpointid"`
+	URL                string   `xorm:"url"`
+	Headers            []string `xorm:"headers"`
+	BasicAuthUsername  string   `xorm:"basicauthusername"`
+	BasicAuthPassword  string   `xorm:"basicauthpassword"`
+	AlertTemplate      string   `xorm:"alerttemplate"`
+	AlertTemplateFile  string   `xorm:"alerttemplatefile"`
+	RowTemplate        string   `xorm:"rowtemplate"`
+	RowTemplateFile    string   `xorm:"rowtemplatefile"`
+	LogFile            string   `xorm:"logfile"`
+	LogLevel           string   `xorm:"loglevel"`
+	SlackEnabled       bool     `xorm:"slackenabled"`
+	SlackDefault       bool     `xorm:"slackdefault"`
+	Workspace          string   `xorm:"workspace"`
+	Channel            string   `xorm:"channel"`
+	SlackUsername      string   `xorm:"slackusername"`
+	Global             bool     `xorm:"global"`
+	StateChangesOnly   string   `xorm:"statechangesonly"`
+	IconEmoji          string   `xorm:"iconemoji"`
+	SslCa              string   `xorm:"sslca"`
+	SslCert            string   `xorm:"sslcert"`
+	SslKey             string   `xorm:"sslkey"`
+	InsecureSkipVerify string   `xorm:"insecureskipverify"`
 }
 
 // TableName go-xorm way to set the Table name to something different to "alert_h_t_t_p_out_rel"
@@ -164,7 +187,7 @@ type AlertIDCfg struct {
 	Active      bool   `xorm:"active"`
 	BaselineID  string `xorm:"baselineid" binding:"Required"`
 	ProductID   string `xorm:"productid" binding:"Required"` //FK - > Product_devices
-	GroupID     string `xorm:"groupid" binding:"Required"`
+	AlertGroup  string `xorm:"alertgroup" binding:"Required"`
 	NumAlertID  int    `xorm:"numalertid" binding:"Required"`
 	Description string `xorm:"description"`
 	//Alert Origin data
@@ -173,7 +196,7 @@ type AlertIDCfg struct {
 	InfluxMeasurement  string `xorm:"influxmeasurement" binding:"Required"`
 	TagDescription     string `xorm:"tagdescription"`
 	InfluxFilter       string `xorm:"influxfilter"`
-	TrigerType         string `xorm:"trigertype" binding:"Required;In(DEADMAN,THRESHOLD,TREND)"` //deadman|
+	TriggerType        string `xorm:"triggertype" binding:"Required;In(DEADMAN,THRESHOLD,TREND)"` //deadman|
 	IntervalCheck      string `xorm:"intervalcheck" binding:"Required"`
 	OperationID        string `xorm:"operationid"`
 	Field              string `xorm:"field" binding:"Required"`
@@ -183,8 +206,8 @@ type AlertIDCfg struct {
 	StatFunc           string `xorm:"statfunc"`
 	CritDirection      string `xorm:"critdirection"`
 	Shift              string `xorm:"shift"`
-	ThresholdType      string `xorm:"thresholdtype"` //Absolute/Relative
-	TrendSign          string `xorm:"trendsign"`     //Positive/Negative
+	TrendType          string `xorm:"trendtype"` //Absolute/Relative
+	TrendSign          string `xorm:"trendsign"` //Positive/Negative
 	//thresholds
 	//CRITICAL
 	ThCritDef         float64 `xorm:"th_crit_def"`
@@ -208,7 +231,7 @@ type AlertIDCfg struct {
 	GrafanaServer      string `xorm:"grafana_server"`
 	GrafanaDashLabel   string `xorm:"grafana_dash_label"`
 	GrafanaDashPanelID string `xorm:"grafana_panel_id"`
-	DeviceIDTag        string `xorm:"deviceid_tag"`
+	ProductTag         string `xorm:"producttag"`
 	DeviceIDLabel      string `xorm:"deviceid_label"`
 	ExtraTag           string `xorm:"extra_tag"`
 	ExtraLabel         string `xorm:"extra_label"`

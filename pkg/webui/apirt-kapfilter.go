@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 
@@ -66,6 +67,9 @@ func RTAlertHandler(ctx *Context, al alert.Data) {
 			} else {
 				log.Debugf("Got outhttp: %+v", outhttp)
 				err = sendData(al, outhttp)
+				if err != nil {
+					log.Warningf("Error sending data to endpoint with id %s. Error: %s.", outhttpid, err)
+				}
 			}
 		}
 	}
@@ -104,24 +108,43 @@ func sendData(al alert.Data, outhttp config.OutHTTPCfg) error {
 	jsonconfig := outhttp.JSONConfig
 	log.Debugf("strouttype: %s", strouttype)
 	if strouttype == "logging" {
-		err = sendDataToLog(al, jsonconfig)
+		err = sendDataToLog(al, outhttp)
 	} else if strouttype == "httppost" {
-		log.Warningf("httppost pending to develop")
+		err = sendDataToHTTPPost(al, outhttp)
 	} else if strouttype == "slack" {
 		err = sendDataToSlack(al, jsonconfig)
 	}
 	return err
 }
 
-func sendDataToLog(al alert.Data, jsonconfig string) error {
-	type logConfig struct {
-		File  string `json:"file"`
-		Level string `json:"level"`
-	}
-	logConf := logConfig{}
+func sendDataToHTTPPost(al alert.Data, outhttp config.OutHTTPCfg) error {
+	log.Debugf("sendDataToHTTPPost. outhttp.EndPointID: %+v, outhttp.URL: %+v", outhttp.EndPointID, outhttp.URL)
 
-	err := json.Unmarshal([]byte(jsonconfig), &logConf)
-	log.Debugf("logConf: %+v", logConf)
+	jsonStr, err := json.Marshal(al)
+
+	req, err := http.NewRequest("POST", outhttp.URL, bytes.NewBuffer(jsonStr))
+	req.Header.Set("X-Custom-Header", "myvalue")
+	req.Header.Set("Content-Type", "application/json")
+	//req.Header.Set("Content-Type", "text/plain")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Errorf("sendDataToHTTPPost. Error:%+v", err)
+	}
+	defer resp.Body.Close()
+
+	log.Debugf("sendDataToHTTPPost. response Status:%+v", resp.Status)
+	log.Debugf("sendDataToHTTPPost. response Headers:%+v", resp.Header)
+	body, _ := ioutil.ReadAll(resp.Body)
+	log.Debugf("sendDataToHTTPPost. response Body:%+v", string(body))
+	return err
+}
+
+func sendDataToLog(al alert.Data, outhttp config.OutHTTPCfg) error {
+
+	var err error
+	log.Debugf("sendDataToLog. outhttp.LogLevel: %+v, outhttp.LogFile: %+v", outhttp.LogLevel, outhttp.LogFile)
 	// New log
 	logout := logrus.New()
 	//Log format
@@ -130,17 +153,25 @@ func sendDataToLog(al alert.Data, jsonconfig string) error {
 	logout.Formatter = customFormatter
 	customFormatter.FullTimestamp = true
 	//Log level
-	l, _ := logrus.ParseLevel(logConf.Level)
+	l, _ := logrus.ParseLevel(outhttp.LogLevel)
 	logout.Level = l
 	//Log file
-	if len(logConf.File) > 0 {
-		//os.Mkdir(logDir, 0755)
+	if len(outhttp.LogFile) > 0 {
+		logConfDir, _ := filepath.Split(outhttp.LogFile)
+		err = os.MkdirAll(logConfDir, 0755)
+		if err != nil {
+			log.Warningf("sendDataToLog. Error creating logConfDir: %s. Error: %s", logConfDir, err)
+		}
 		//Log output
-		f, _ := os.OpenFile(logConf.File, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
-		logout.Out = f
+		f, err := os.OpenFile(outhttp.LogFile, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+		if err != nil {
+			log.Warningf("sendDataToLog. Error opening logfile: %s", err)
+		} else {
+			logout.Out = f
+			//Log message
+			logout.Debugf("Alert received from kapacitor:%+v", al)
+		}
 	}
-	//Log message
-	logout.Debugf("Alert received from kapacitor:%+v", al)
 	return err
 }
 
