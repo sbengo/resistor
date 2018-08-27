@@ -44,9 +44,9 @@ export class IfxMeasurementService {
 
     getIfxMeasurementItemByDbIdMeasName(dbid : string, measname : string) {
         return this.http.get('/api/cfg/ifxmeasurement/bydbidmeasname/'+dbid+'&'+measname)
-        .map( (responseData) =>
+        .pipe(map( (responseData) =>
             responseData.json()
-    )}
+    ))}
 
     getIfxMeasurementNamesArray(filter : string) {
         console.log("filter: ",filter);

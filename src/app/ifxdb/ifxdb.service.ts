@@ -44,9 +44,9 @@ export class IfxDBService {
 
     getIfxDBCfgArrayByMeasName(id : string) {
         return this.http.get('/api/cfg/ifxdb/bymeasname/'+id)
-        .map( (responseData) =>
+        .pipe(map( (responseData) =>
             responseData.json()
-    )};
+    ))};
 
     checkOnDeleteIfxDBItem(id : string){
       return this.http.get('/api/cfg/ifxdb/checkondel/'+id)

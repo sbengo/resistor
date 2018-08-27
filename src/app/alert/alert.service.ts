@@ -52,9 +52,9 @@ export class AlertService {
 
     getAlertItemByProductId(productid : string) {
         return this.http.get('/api/cfg/alertid/byproductid/'+productid)
-        .map( (responseData) =>
+        .pipe(map( (responseData) =>
             responseData.json()
-    )};
+    ))};
 
     checkOnDeleteAlertItem(id : string){
         return this.http.get('/api/cfg/alertid/checkondel/'+id)

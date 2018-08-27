@@ -586,7 +586,6 @@ export class AlertComponent implements OnInit {
       this.select_alertgroup = this.createMultiselectArray(this.picked_product['AlertGroups']);
       this.select_ifxms = this.createMultiselectArray(this.picked_product['Measurements']);
     }
->>>>>>> d86aaa113eed21f1a8198bcbfb6b599d88dfea14
   }
 
   createMultiselectArray(tempArray, ID?, Name?, extraData?) : any {
